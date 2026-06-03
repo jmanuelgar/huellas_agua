@@ -1,0 +1,28 @@
+@charset "UTF-8";
+/* CSS Document */
+
+
+.ir-arriba {
+    display: none;
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #17a2b8;
+    color: #fff;
+    text-align: center;
+    font-size: 45px;
+    z-index: 9999;
+    opacity: 0.9;
+}
+
+.ir-arriba:hover,
+.ir-arriba:active,
+.ir-arriba:focus {
+    background: #000;
+    opacity: .8;
+    color: #fff;
+    border-color: #ff214f
+}
