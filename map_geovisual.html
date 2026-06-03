@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta name="description" content="" />
+  <meta name="author" content="" />
+
+    <title>Geovisualizador</title>
+
+  <!-- favicon -->
+  <link rel="shortcut icon" href="../img/favicon.png">
+  <link rel="apple-touch-icon" href="../img/android-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="../img/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="../img/apple-icon-114x114.png">
+
+      <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous" />
+
+  <!-- CSS-->
+  <link href="../css/estilos.css" rel="stylesheet" />
+
+  <!-- OL -->
+  <link rel="stylesheet" href="https://openlayers.org/en/v5.3.0/css/ol.css" type="text/css">
+  <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+  <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+  <script src="https://openlayers.org/en/v5.3.0/build/ol.js"></script>
+
+       <!-- ol-ext -->
+    <link rel="stylesheet" href="https://viglino.github.io/ol-ext/dist/ol-ext.css" />
+  <script type="text/javascript" src="https://viglino.github.io/ol-ext/dist/ol-ext.js"></script>
+
+  <script src="js/control_capas.js"></script>
+
+   <style>
+
+    #map {
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+    }
+    /* popup style */
+    .ol-popup {
+      max-width:300px;
+      min-width:100px;
+      min-height:1em;
+      color: black;
+    }
+    /* Image on popup */
+    .ol-popup img {
+      float: left;
+      margin: 0.5em 1em 0.5em 1em;
+      max-width: 300px;
+      max-height: 180px;
+    }
+    /* no image content tooltips */
+    .ol-popup.tooltips img {
+      display:none;
+    }
+    /* Custom red style (tips) */
+    .ol-popup.red > div {
+      background-color: red;
+    }
+    .ol-popup.red .anchor {
+      color: red;
+    }
+
+    /* Custom orange style (tips) */
+    .ol-popup.tips.orange > div {
+      border-color:#da7;
+      background-color:#eca;
+    }
+    .ol-popup.tips.orange .anchor {
+      color: #da7;
+    }
+
+    /* orange style (default) */
+    .ol-popup.default.orange > div {
+      border:4px solid #f96;
+    }
+    .ol-popup.default.orange .anchor {
+      margin: -10px 22px;
+    }
+    .ol-popup.default.orange .anchor::after {
+      margin: 5px -11px; 
+    }
+    .ol-popup-middle.default.orange .anchor::after {
+      margin: -10.5px -27px /*border:4 +2 px */; 
+    }
+    .ol-popup.default.orange .anchor {
+      color: #f96;
+    }
+    .ol-popup.default.orange .closeBox {
+      background-color: rgba(255, 153, 102, 0.7);
+    }
+    .ol-popup.default.orange .closeBox:hover {
+      background-color: rgba(255, 153, 102, 1);
+    }
+
+    .btn {
+        font-size: 0.9rem;
+        font-family: "Gotham",
+          helvetica,
+          arial,
+          sans-serif;
+    }
+    
+  #control_capas {
+  position: absolute;
+  display: block;
+  left: 1%;
+  top: 12%;
+  width: 23%;
+  height: 55%;
+ }
+
+ @media(max-width: 1024px) {
+  .btn {
+      font-size: 0.5rem;
+  }
+  h5 {
+    font-size: 0.7rem;
+  }
+  #control_capas {
+    width: 55%;
+    height: 35%;
+  }
+ 
+}
+
+ #content {
+  position: absolute;
+    display: inline-block;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+ }
+
+
+
+  #sombra_leyend {
+position: absolute;
+display: block;
+left: 3%;
+top: 12%;
+height: 55px;
+width: 55px;
+border-radius: 4px;
+}
+
+#sombra_presentacion {
+position: absolute;
+display: block;
+right: 2%;
+top: 10%;
+height: 45px;
+width: 45px;
+border-radius: 4px;
+}
+
+#panel_info {
+  position: absolute;
+  display: block;
+  right: 1%;
+  top: 10%;
+  width: 32%;
+  height: 89%;
+ }
+
+ #diccdatos {
+  position: absolute;
+  display: none;
+  right: 1%;
+  top: 10%;
+  width: 32%;
+  height: 89%;
+ }
+
+ #btns {
+  position: absolute;
+  display: block;
+  right: 1%;
+  top:5%;
+  width: 32%;
+  height: 89%;
+ }
+
+ .textscroll {
+ position: absolute;
+  display: block;
+height: 85%;
+overflow-y: scroll;
+}
+
+.scroll{
+  position: absolute;
+  display: block;
+height: 80%;
+width: 93%;
+overflow-y: scroll;
+}
+
+
+ .form-check-label {
+    color: black;
+  font-size: 1rem;
+ }
+
+ .card-header {
+  padding: 0.5rem 1.25rem;
+ }
+  </style>
+
+  </head>
+  <body>
+    <div id="content">
+    <div id="map" class="map"></div>
+    <div id="btns">
+      <button type="button" class="btn btn-info"><a href="data/datos_huellasagua.zip" target="_self" style="color: white;">DESCARGAR CAPAS</a></button>
+      <button type="button" class="btn btn-secondary" id="diccionario">DICCIONARIO DE DATOS</button>
+<button type="button" class="btn" style="background-color: #3a6b68;">
+  <a href="map.html" target="_self" style="color: white;">REGRESAR</a>
+</button>
+    </div>
+<div id ="sombra_leyend">
+  <button type="button" class="btn btn-primary boton" id="boton_leyenda" style="background-color: black; border-color: black;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="30" fill="white" class="bi bi-layers-fill" viewBox="0 0 16 16">
+      <path d="M7.765 1.559a.5.5 0 0 1 .47 0l7.5 4a.5.5 0 0 1 0 .882l-7.5 4a.5.5 0 0 1-.47 0l-7.5-4a.5.5 0 0 1 0-.882l7.5-4z"/>
+      <path d="m2.125 8.567-1.86.992a.5.5 0 0 0 0 .882l7.5 4a.5.5 0 0 0 .47 0l7.5-4a.5.5 0 0 0 0-.882l-1.86-.992-5.17 2.756a1.5 1.5 0 0 1-1.41 0l-5.17-2.756z"/>
+    </svg>
+ </button>
+ </div>
+    <div class="card border-dark mb-3" id="control_capas">
+    <h5 class="card-header"> Control de capas <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" id="leyend" fill="currentColor" class="bi bi-caret-left" viewBox="0 0 16 16">
+      <path d="M10 12.796V3.204L4.519 8 10 12.796zm-.659.753-5.48-4.796a1 1 0 0 1 0-1.506l5.48-4.796A1 1 0 0 1 11 3.204v9.592a1 1 0 0 1-1.659.753z"/>
+    </svg> </h5>
+    <div class="card-body text-dark" style="padding-right: 0rem;">
+    <div class="scroll" id="panel_capas">     
+    </div>
+    </div>
+    </div>
+
+        <div id ="sombra_presentacion">
+      <button type="button" class="btn btn-primary boton" id="boton_pres" style="background-color: black; border-color: black;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="30" fill="white" class="bi bi-layout-text-sidebar-reverse" viewBox="0 0 16 16">
+          <path d="M12.5 3a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1h5zm0 3a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1h5zm.5 3.5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 .5-.5zm-.5 2.5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1h5z"/>
+          <path d="M16 2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2zM4 1v14H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h2zm1 0h9a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5V1z"/>
+        </svg>
+     </button>
+     </div>
+    <div class="card border-dark mb-3" id="panel_info">
+    <h5 class="card-header"> <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" id="pres" fill="currentColor" class="bi bi-caret-right" viewBox="0 0 16 16">
+      <path d="M6 12.796V3.204L11.481 8 6 12.796zm.659.753 5.48-4.796a1 1 0 0 0 0-1.506L6.66 2.451C6.011 1.885 5 2.345 5 3.204v9.592a1 1 0 0 0 1.659.753z"></path>
+      </svg> Instrucciones </h5>
+    <div class="card-body text-dark" style="padding-right: 0rem;">
+    <div class="textscroll" id="text">
+    </div>
+    </div>
+    </div>
+
+        <div class="card border-dark mb-3" id="diccdatos">
+    <h5 class="card-header">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" id="cerrar_dicc" fill="currentColor" class="bi bi-x-square" viewBox="0 0 16 16">
+  <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
+  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+</svg> Diccionario de datos  </h5>
+    <div class="card-body text-dark" style="padding-right: 0rem;">
+    <div class="textscroll" id="text_diccdatos">
+    </div>
+    </div>
+    </div>
+</div>
+
+  <!-- Bootstrap core JavaScript -->
+  <script src="../vendor/jquery/jquery.min.js"></script>
+  <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+
+
+  // Popup overlay
+  var popup = new ol.Overlay.Popup ({
+    popupClass: "black", //"tooltips", "warning" "black" "default", "tips", "shadow",
+    closeBox: true,
+    positioning: 'auto',
+    autoPan: {
+      animation: { duration: 250 }
+    }
+  });
+
+  var popup2 = new ol.Overlay.Popup ({
+    popupClass: "default", //"tooltips", "warning" "black" "default", "tips", "shadow",
+    closeBox: true,
+    positioning: 'auto',
+    autoPan: {
+      animation: { duration: 250 }
+    }
+  });
+
+
+      var raster = new ol.layer.Tile({
+        title: "RASTER",
+        baseLayer: true,
+        source: new ol.source.XYZ({
+          attributions: 'Tiles © <a href="https://services.arcgisonline.com/ArcGIS/' +
+              'rest/services/World_Topo_Map/MapServer">ArcGIS</a>',
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/' +
+              'World_Topo_Map/MapServer/tile/{z}/{y}/{x}'
+        }),
+        visible: true
+      });
+
+    var aerialLayer = new ol.layer.Tile({
+  source: new ol.source.XYZ({
+    url: 'https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=BMXepazATydXoRPpapuv',
+    tileSize: 512,
+    maxZoom: 25,
+  }),
+  visible: false
+})
+
+    var osm = new ol.layer.Tile({
+    title: "OSM",
+    baseLayer: true,
+    source: new ol.source.OSM(),
+    visible: false
+  });
+    var corrientes = new ol.layer.Vector({
+      name: 'Corrientes',
+    source: new ol.source.Vector({
+        url: 'data/corrientes.geojson',
+        format: new ol.format.GeoJSON(),
+    }),
+    visible: false
+    });
+
+        var cauces = new ol.layer.Vector({
+      name: 'Cauces principales',
+    source: new ol.source.Vector({
+        url: 'data/cauces_principales.geojson',
+        format: new ol.format.GeoJSON(),
+    }),
+    visible: true
+    });
+
+        var tuneles = new ol.layer.Vector({
+      name: 'Tuneles',
+    source: new ol.source.Vector({
+        url: 'data/tuneles.geojson',
+        format: new ol.format.GeoJSON(),
+    }),
+    visible: true
+    });
+
+    var muns = new ol.layer.Vector({
+      name: 'Municipios',
+    source: new ol.source.Vector({
+        url: 'data/muns.geojson',
+        format: new ol.format.GeoJSON(),
+    }),
+        visible: false
+    }); 
+
+    var cuencas = new ol.layer.Vector({
+      name: 'Cuencas',
+    source: new ol.source.Vector({
+        url: 'data/cuencas.geojson',
+        format: new ol.format.GeoJSON(),
+    }),
+        visible: false
+    });
+
+    var cuerpos_agua = new ol.layer.Vector({
+      name: 'Cuerpos de agua',
+    source: new ol.source.Vector({
+        url: 'data/cuerpos_agua.geojson',
+        format: new ol.format.GeoJSON(),
+    }),
+        visible: false
+    });
+
+    var desvia_combi = new ol.layer.Vector({
+      name: 'Desviación combinada',
+    source: new ol.source.Vector({
+        url: 'data/desviacion_combinada.geojson',
+        format: new ol.format.GeoJSON(),
+    }),
+        visible: false
+    });
+
+    var lumbreras = new ol.layer.Vector({
+      name: 'Lumbreras',
+    source: new ol.source.Vector({
+        url: 'data/lumbreras.geojson',
+        format: new ol.format.GeoJSON(),
+    }),
+        visible: false
+    });
+
+    var plantas_bombeo = new ol.layer.Vector({
+      name: 'Plantas de bombeo',
+    source: new ol.source.Vector({
+        url: 'data/plantas_bombeo.geojson',
+        format: new ol.format.GeoJSON(),
+    }),
+        visible: false
+    });
+
+    var presas = new ol.layer.Vector({
+      name: 'Presas',
+    source: new ol.source.Vector({
+        url: 'data/presas.geojson',
+        format: new ol.format.GeoJSON(),
+    }),
+        visible: false
+    });
+
+    var historias = new ol.layer.Vector({
+      name: 'Historias',
+    source: new ol.source.Vector({
+        url: 'data/historias.geojson',
+        format: new ol.format.GeoJSON(),
+    }),
+        visible: true
+    });
+    
+          var image = new ol.style.Style({
+        image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+          anchor: [0.5, 46],
+          scale: [0.04], 
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'pixels',
+          src: 'img_map/house.png'
+        }))
+      });
+
+      historias.setStyle(image);
+
+var StyleCuencas =  new ol.style.Style({
+      stroke: new ol.style.Stroke({
+     color: [255, 255,255],
+      width: 1, 
+      lineCap: 'round'
+    }),
+    fill: new ol.style.Fill({
+      color: [ 61, 141, 163, 0.2]
+    }) 
+});
+      cuencas.setStyle(StyleCuencas);
+
+var StyleMuns =  new ol.style.Style({
+      stroke: new ol.style.Stroke({
+     color: [255, 255,255],
+      width: 1, 
+      lineCap: 'round'
+    }),
+    fill: new ol.style.Fill({
+      color: [ 64, 58, 58, 0.2]
+    }) 
+});
+
+    muns.setStyle(StyleMuns);
+
+var Stylecuerpos =  new ol.style.Style({
+      stroke: new ol.style.Stroke({
+     color: [75, 185, 242],
+      width: 0.6, 
+      lineCap: 'round'
+    }),
+    fill: new ol.style.Fill({
+      color: [ 75, 185, 242, 0.3]
+    }) 
+});
+
+    cuerpos_agua.setStyle(Stylecuerpos);
+
+          var imgpresas = new ol.style.Style({
+        image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+          anchor: [0.5, 46],
+          scale: [0.05], 
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'pixels',
+          src: 'img_map/dam.png'
+        }))
+      });
+
+    presas.setStyle(imgpresas);
+
+var Stylecorrientes =  new ol.style.Style({
+      stroke: new ol.style.Stroke({
+     color: [135, 196, 250],
+      width: 1.2, 
+      lineCap: 'round'
+    })
+});
+
+    corrientes.setStyle(Stylecorrientes);
+
+    var Stylecauces =  new ol.style.Style({
+      stroke: new ol.style.Stroke({
+     color: [78, 199, 36],  
+      width: 1.2, 
+      lineCap: 'round'
+    })
+});
+
+    cauces.setStyle(Stylecauces);
+
+    var Styletuneles =  new ol.style.Style({
+      stroke: new ol.style.Stroke({
+     color: [0, 0, 0],
+      width: 1.2, 
+      lineCap: 'round'
+    })
+});
+
+      tuneles.setStyle(Styletuneles);
+
+
+          var imgbombeo = new ol.style.Style({
+        image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+          anchor: [0.5, 46],
+          scale: [0.06], 
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'pixels',
+          src: 'img_map/water-pump.png'
+        }))
+      });
+
+      plantas_bombeo.setStyle(imgbombeo);
+
+    var Styledercom =  new ol.style.Style({
+      stroke: new ol.style.Stroke({
+     color: [130, 93, 217],
+      width: 1.2, 
+      lineCap: 'round'
+    })
+});
+
+    desvia_combi.setStyle(Styledercom);
+
+          var imglumbrera = new ol.style.Style({
+        image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+          anchor: [0.5, 46],
+          scale: [0.03], 
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'pixels',
+          src: 'img_map/water-gate.png'
+        }))
+      });
+
+      lumbreras.setStyle(imglumbrera);
+
+      var map = new ol.Map({
+        layers: [ aerialLayer,raster,osm, cuencas, cuerpos_agua, muns, desvia_combi,cauces, corrientes, tuneles, lumbreras, presas,
+         plantas_bombeo, historias],
+        target: 'map',
+        controls: ol.control.defaults({
+          attributionOptions: {
+            collapsible: false
+          }
+        }),
+        view: new ol.View({
+          center: ol.proj.fromLonLat([-99.1004437,19.6519164]),
+          zoom: 10.2
+        })
+      });
+        //map.addControl(new ol.control.LayerPopup());
+
+ // Select  interaction
+  var select = new ol.interaction.Select({
+    hitTolerance: 5,
+    multi: true,
+    condition: ol.events.condition.singleClick
+  });
+  map.addInteraction(select);
+
+  // Select control
+  var popup = new ol.Overlay.PopupFeature({
+    popupClass: 'default anim',
+    select: select,
+    canFix: true,
+    template: {
+        attributes: // [ 'region', 'arrond', 'cantons', 'communes', 'pop' ]
+        {
+          'cuenca': { title: 'Nombre: '},
+          'nomgeo': { title: 'Nombre: '},
+          'Nombre': { title: 'Nombre: '},
+          'Tipo': { title: 'Tipo: '},
+          'Túnel': { title: 'Túnel: '},
+          'Elev': { title: 'Altitud (m): '},
+          'Seccion': { title: 'Sección: '},
+          'RESPONSABL': { title: 'Autoridad responsable: '},
+          'Autoridad': { title: 'Autoridad responsable: '},
+          'Responsable': { title: 'Autoridad responsable: '},
+          'Profund': { title: 'Profundidad (m): '},
+          'Profundida': { title: 'Profundidad: '},
+          'Longitud_km': { title: 'Longitud (km): '},
+          'Diametro_m': { title: 'Diámetro (m): '},
+          'Longitud': { title: 'Longitud (km): '},
+          'Diametro': { title: 'Diámetro (m): '},
+          'Construccion_Inicio': { title: 'Fecha de inicio de construcción: '},
+          'Construccion_fin': { title: 'Fecha de fin de construcción: '},
+          'Capacidad': { title: 'Capacidad (m3/s): '},
+          'Capacidad (hm3)': { title: 'Capacidad (hm3): '},
+          'ESTADO': { title: 'Estado: '},
+          'Estado': { title: 'Estado: '},
+          'DELEGACION': { title: 'Alcaldía o municipio: '},
+          'Municipio': { title: 'Alcaldía o municipio: '},
+          'PROPOSITO': { title: 'Propósito: '},
+          'CORRIENTE': { title: 'Corriente: '},
+          'ALT_MAX_CO': { title: 'Altura máxima (m): '},
+          'VOL_NAMO': { title: 'Nivel de Aguas Máximas Ordinarias (hm): '},
+          'Recibe_de': { title: 'Recibe de: '},
+          'Descarga_a': { title: 'Descarga a: '},
+          'Descrip': { title: 'Descripción: '},
+
+        }
+    }
+  });
+  map.addOverlay (popup);
+
+
+   var hover = new ol.interaction.Hover({ layers: [historias, tuneles, cuencas, muns, presas, cauces, plantas_bombeo, desvia_combi, lumbreras, cuerpos_agua], cursor: "pointer" });
+    map.addInteraction(hover);
+
+    </script>
+
+    <script>
+        $("#boton_leyenda").click(function(){
+            $("#control_capas").animate({ 
+                      width: "toggle"
+               });
+           $("#boton_leyenda").hide();
+      });
+      
+      $("#leyend").click(function(){
+         $("#control_capas").animate({ 
+                width: "toggle"
+         });
+         $("#boton_leyenda").show();
+        });
+
+        $("#pres").click(function(){
+            $("#panel_info").animate({ 
+                   width: "toggle"
+            });
+            $("#boton_pres").show();
+           });
+           
+           $("#boton_pres").click(function(){
+            $("#panel_info").animate({ 
+                      width: "toggle"
+               });
+           $("#boton_pres").hide();
+      });
+
+           $("#diccionario").click(function(){
+            $("#diccdatos").animate({ 
+                      width: "show"
+               });
+           $("#panel_info").hide();
+      });
+
+                 $("#cerrar_dicc").click(function(){
+           $("#diccdatos").hide();
+      });
+
+$(document).ready(function(){
+   $("#panel_capas").load('cont/capas.php');
+  $("#text").load('cont/panel_info.php');
+  $("#text_diccdatos").load('cont/diccionario_datos.php');
+
+});
+  </script>
+  </body>
+</html>
